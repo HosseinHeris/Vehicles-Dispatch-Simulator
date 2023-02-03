@@ -1165,7 +1165,15 @@ class Simulation(object):
         When apply Dispatch with Reinforcement learning
         you need to implement your next State function here
         """
-        return
+        States = {
+            'OrderNum': self.OrderNum,
+            'RejectNum': self.RejectNum,
+            'DispatchNum': self.DispatchNum,
+            'TotallyDispatchCost': self.TotallyDispatchCost,
+            'TotallyDispatchTime': self.TotallyDispatchTime,
+
+        }
+        return States
 
     def LearningFunction(self):
         return
