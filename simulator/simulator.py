@@ -1171,12 +1171,75 @@ class Simulation(object):
             'DispatchNum': self.DispatchNum,
             'TotallyDispatchCost': self.TotallyDispatchCost,
             'TotallyDispatchTime': self.TotallyDispatchTime,
-
         }
+
         return States
 
     def LearningFunction(self):
+        '''
+        NO NEED TO IMPLEMENT ANY LEARNING FUNCTION FOR BONSAI APPLICATIONS.
+        '''
         return
+
+    def EpisodeStart(self):
+        self.Reset()
+        self.RealExpTime = self.Orders[0].ReleasTime - self.TimePeriods
+
+        # To complete running orders
+        self.EpisodeEndTime = self.Orders[-1].ReleasTime + 3 * self.TimePeriods
+        self.NowOrder = self.Orders[0]
+        self.step = 0
+        self.EpisodeStartTime = dt.datetime.now()
+        print("Start episode")
+        print("----------------------------")
+
+    def EpisodeStep(self, dispatch_action):
+        '''
+        input: dispatch_action
+        Relocate taxis according to the dispatch_action 
+        and then continue running the simulator for 
+        a fixed time period (default = 10 min).
+        '''
+        StepUpdateStartTime = dt.datetime.now()
+        self.UpdateFunction()
+        self.TotallyUpdateTime += dt.datetime.now() - StepUpdateStartTime
+
+        StepMatchStartTime = dt.datetime.now()
+        self.MatchFunction()
+        self.TotallyMatchTime += dt.datetime.now() - StepMatchStartTime
+
+        StepRewardStartTime = dt.datetime.now()
+        self.RewardFunction()
+        self.TotallyRewardTime += dt.datetime.now() - StepRewardStartTime
+
+        StepNextStateStartTime = dt.datetime.now()
+        self.GetNextStateFunction()
+        self.TotallyNextStateTime += dt.datetime.now() - StepNextStateStartTime
+        for i in self.Clusters:
+            i.DispatchNumber = 0
+
+        StepLearningStartTime = dt.datetime.now()
+        self.LearningFunction()
+        self.TotallyLearningTime += dt.datetime.now() - StepLearningStartTime
+
+        StepDemandPredictStartTime = dt.datetime.now()
+        self.DemandPredictFunction()
+        self.SupplyExpectFunction()
+        self.TotallyDemandPredictTime += dt.datetime.now() - StepDemandPredictStartTime
+
+        # Count the number of idle vehicles before Dispatch
+        for i in self.Clusters:
+            i.PerDispatchIdleVehicles = len(i.IdleVehicles)
+        StepDispatchStartTime = dt.datetime.now()
+        self.DispatchFunction()
+        self.TotallyDispatchTime += dt.datetime.now() - StepDispatchStartTime
+        # Count the number of idle vehicles after Dispatch
+        for i in self.Clusters:
+            i.LaterDispatchIdleVehicles = len(i.IdleVehicles)
+
+        # A time slot is processed
+        self.step += 1
+        self.RealExpTime += self.TimePeriods
 
     def SimCity(self):
         self.RealExpTime = self.Orders[0].ReleasTime - self.TimePeriods
