@@ -1181,7 +1181,7 @@ class Simulation(object):
         '''
         return
 
-    def EpisodeStart(self):
+    def EpisodeReset(self):
         self.Reset()
         self.RealExpTime = self.Orders[0].ReleasTime - self.TimePeriods
 
