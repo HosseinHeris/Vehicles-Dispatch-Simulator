@@ -1241,6 +1241,12 @@ class Simulation(object):
         self.step += 1
         self.RealExpTime += self.TimePeriods
 
+    def GetTerminal(self):
+        '''
+        Check the terminal conditions
+        '''
+        return self.RealExpTime >= self.EpisodeEndTime
+
     def SimCity(self):
         self.RealExpTime = self.Orders[0].ReleasTime - self.TimePeriods
 
